@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: wifi-calc
+    env: static
+    buildCommand: mkdir -p build && cp *.html *.css *.js build/ 2>/dev/null || true
+    staticPublishPath: ./build
