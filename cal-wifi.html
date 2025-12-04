@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest WiFi Bandwidth Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .config-panel {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .config-item label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .config-item input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .config-item input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .config-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 5px;
+        }
+        
+        .table-container {
+            padding: 25px;
+            overflow-x: auto;
+        }
+        
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .table-header h2 {
+            font-size: 20px;
+            color: #212529;
+        }
+        
+        .export-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .export-btn:hover {
+            background: #5568d3;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-excellent {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .status-good {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #d1ecf1;
+            color: #0c5460;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .status-acceptable {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .status-poor {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .summary-card h3 {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #212529;
+        }
+        
+        .summary-card .unit {
+            font-size: 14px;
+            color: #6c757d;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Guest WiFi Bandwidth Calculator</h1>
+            <p>Meraki MR46 Network Performance Analysis</p>
+        </div>
+        
+        <div class="config-panel">
+            <div class="config-grid">
+                <div class="config-item">
+                    <label>Per-Client Bandwidth (Mbps)</label>
+                    <input type="number" id="perClient" value="15" min="1" max="100" oninput="calculate()">
+                    <div class="config-value"><span id="perClientDisplay">15</span> Mbps</div>
+                </div>
+                <div class="config-item">
+                    <label>Per-SSID Bandwidth (Mbps)</label>
+                    <input type="number" id="perSSID" value="350" min="50" max="1000" oninput="calculate()">
+                    <div class="config-value"><span id="perSSIDDisplay">350</span> Mbps</div>
+                </div>
+                <div class="config-item">
+                    <label>Total WAN Bandwidth (Mbps)</label>
+                    <input type="number" id="wanSpeed" value="1000" min="100" max="10000" oninput="calculate()">
+                    <div class="config-value"><span id="wanDisplay">1000</span> Mbps</div>
+                </div>
+                <div class="config-item">
+                    <label>Number of Access Points</label>
+                    <input type="number" id="numAPs" value="5" min="1" max="20" oninput="calculate()">
+                    <div class="config-value"><span id="apDisplay">5</span> APs</div>
+                </div>
+            </div>
+            
+            <div class="summary-grid" id="summaryGrid">
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table-header">
+                <h2>📊 Bandwidth Distribution by User Count</h2>
+                <button class="export-btn" onclick="exportToCSV()">📥 Export to CSV</button>
+            </div>
+            
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Concurrent Users</th>
+                        <th>Users per AP</th>
+                        <th>Theoretical Max (Mbps)</th>
+                        <th>Actual Speed per User (Mbps)</th>
+                        <th>Total Network Usage (Mbps)</th>
+                        <th>% of SSID Limit</th>
+                        <th>% of WAN Used</th>
+                        <th>User Experience</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const perClient = parseFloat(document.getElementById('perClient').value);
+            const perSSID = parseFloat(document.getElementById('perSSID').value);
+            const wanSpeed = parseFloat(document.getElementById('wanSpeed').value);
+            const numAPs = parseFloat(document.getElementById('numAPs').value);
+            
+            document.getElementById('perClientDisplay').textContent = perClient;
+            document.getElementById('perSSIDDisplay').textContent = perSSID;
+            document.getElementById('wanDisplay').textContent = wanSpeed;
+            document.getElementById('apDisplay').textContent = numAPs;
+            
+            const userCounts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            userCounts.forEach(users => {
+                const usersPerAP = (users / numAPs).toFixed(1);
+                const theoreticalMax = users * perClient;
+                const actualPerUser = Math.min(perClient, perSSID / users);
+                const totalUsage = Math.min(theoreticalMax, perSSID);
+                const percentSSID = (totalUsage / perSSID * 100).toFixed(1);
+                const percentWAN = (totalUsage / wanSpeed * 100).toFixed(1);
+                
+                let experience = '';
+                if (actualPerUser >= 12) {
+                    experience = '<span class="status-excellent">Excellent</span>';
+                } else if (actualPerUser >= 8) {
+                    experience = '<span class="status-good">Good</span>';
+                } else if (actualPerUser >= 5) {
+                    experience = '<span class="status-acceptable">Acceptable</span>';
+                } else {
+                    experience = '<span class="status-poor">Poor</span>';
+                }
+                
+                const row = `
+                    <tr>
+                        <td><strong>${users}</strong></td>
+                        <td>${usersPerAP}</td>
+                        <td>${theoreticalMax.toFixed(0)}</td>
+                        <td><strong>${actualPerUser.toFixed(2)}</strong></td>
+                        <td>${totalUsage.toFixed(0)}</td>
+                        <td>${percentSSID}%</td>
+                        <td>${percentWAN}%</td>
+                        <td>${experience}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            updateSummary(perClient, perSSID, wanSpeed);
+        }
+        
+        function updateSummary(perClient, perSSID, wanSpeed) {
+            const maxUsersAtFullSpeed = Math.floor(perSSID / perClient);
+            const wanAllocation = (perSSID / wanSpeed * 100).toFixed(1);
+            const reservedForInternal = wanSpeed - perSSID;
+            const maxCapacity = Math.floor(perSSID / 5);
+            
+            const summaryHTML = `
+                <div class="summary-card">
+                    <h3>Max Users at Full Speed</h3>
+                    <div class="value">${maxUsersAtFullSpeed}<span class="unit">users</span></div>
+                </div>
+                <div class="summary-card">
+                    <h3>WAN Allocated to Guests</h3>
+                    <div class="value">${wanAllocation}<span class="unit">%</span></div>
+                </div>
+                <div class="summary-card">
+                    <h3>Reserved for Internal</h3>
+                    <div class="value">${reservedForInternal}<span class="unit">Mbps</span></div>
+                </div>
+                <div class="summary-card">
+                    <h3>Max Guest Capacity</h3>
+                    <div class="value">${maxCapacity}<span class="unit">users</span></div>
+                </div>
+            `;
+            
+            document.getElementById('summaryGrid').innerHTML = summaryHTML;
+        }
+        
+        function exportToCSV() {
+            const perClient = parseFloat(document.getElementById('perClient').value);
+            const perSSID = parseFloat(document.getElementById('perSSID').value);
+            const wanSpeed = parseFloat(document.getElementById('wanSpeed').value);
+            const numAPs = parseFloat(document.getElementById('numAPs').value);
+            
+            let csv = 'Guest WiFi Bandwidth Analysis\n\n';
+            csv += `Configuration:\n`;
+            csv += `Per-Client Limit,${perClient} Mbps\n`;
+            csv += `Per-SSID Limit,${perSSID} Mbps\n`;
+            csv += `Total WAN,${wanSpeed} Mbps\n`;
+            csv += `Number of APs,${numAPs}\n\n`;
+            
+            csv += 'Concurrent Users,Users per AP,Theoretical Max (Mbps),Actual Speed per User (Mbps),Total Network Usage (Mbps),% of SSID Limit,% of WAN Used,User Experience\n';
+            
+            const userCounts = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100];
+            
+            userCounts.forEach(users => {
+                const usersPerAP = (users / numAPs).toFixed(1);
+                const theoreticalMax = users * perClient;
+                const actualPerUser = Math.min(perClient, perSSID / users);
+                const totalUsage = Math.min(theoreticalMax, perSSID);
+                const percentSSID = (totalUsage / perSSID * 100).toFixed(1);
+                const percentWAN = (totalUsage / wanSpeed * 100).toFixed(1);
+                
+                let experience = '';
+                if (actualPerUser >= 12) experience = 'Excellent';
+                else if (actualPerUser >= 8) experience = 'Good';
+                else if (actualPerUser >= 5) experience = 'Acceptable';
+                else experience = 'Poor';
+                
+                csv += `${users},${usersPerAP},${theoreticalMax.toFixed(0)},${actualPerUser.toFixed(2)},${totalUsage.toFixed(0)},${percentSSID}%,${percentWAN}%,${experience}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'guest_wifi_bandwidth_analysis.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+        
+        calculate();
+    </script>
+</body>
+</html>
